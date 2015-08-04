@@ -16,6 +16,7 @@ public final class ParseConsts {
 
         private Task() {   }
 
+        public static final String _Class = "Task";
         public static final String ObjectId = "objectId";
         public static final String TaskName = "taskName";
         public static final String Description = "description";
@@ -25,5 +26,7 @@ public final class ParseConsts {
         public static final String IsArchived = "isArchived";
 
     }
+
+
 
 }

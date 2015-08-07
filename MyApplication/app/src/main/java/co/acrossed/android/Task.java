@@ -20,10 +20,6 @@ public class Task extends ParseObject {
         return ParseQuery.getQuery(Task.class);
     }
 
-    public String getObjectId(){
-        return getString(ParseConsts.Task.ObjectId);
-    }
-
     public String getTaskName(){
         return getString(ParseConsts.Task.TaskName);
     }
@@ -70,6 +66,14 @@ public class Task extends ParseObject {
 
     public void setIsArchived(boolean isArchived){
         put(ParseConsts.Task.IsArchived, isArchived);
+    }
+
+    public String getCategory(){
+        return getString(ParseConsts.Task.Category);
+    }
+
+    public void setCategory(String category){
+        put(ParseConsts.Task.Category, category);
     }
 
 

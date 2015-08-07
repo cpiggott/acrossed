@@ -7,25 +7,19 @@
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/checkBoxTask" />
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginLeft="5dp"
-        android:gravity="center_vertical"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Task Title"
-            android:id="@+id/textViewTaskTitle"/>
+        android:id="@+id/checkBoxTask"
+        android:layout_marginLeft="5dp"/>
 
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_marginLeft="15dp"
+        android:text="Task Title"
+        android:id="@+id/textViewTaskTitle"/>
 
-    </LinearLayout>
+
 
 
 

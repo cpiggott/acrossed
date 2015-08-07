@@ -21,6 +21,7 @@ public class Acrossed extends Application {
         sContext = this;
 
         ParseObject.registerSubclass(Task.class);
+        ParseObject.registerSubclass(Category.class);
 
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, "Ce6lFJPBDZyQ6qzswNZr74jEYD5YeZUwMscUza4X", "7eD006vBtJSXizBJ6OE3Osmwg98YCWdgPsYUSydB");

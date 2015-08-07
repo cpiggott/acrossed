@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,8 @@ public class HomeFragment extends Fragment {
         //Pull all the tasks
 
 
+
+
     }
 
     @Override
@@ -76,7 +79,7 @@ public class HomeFragment extends Fragment {
         });
 
         ParseQuery<Task> query = Task.getQuery();
-        query.whereEqualTo(ParseConsts.Task.IsComplete, false).whereEqualTo(ParseConsts.Task.IsArchived, false);
+        query.whereEqualTo(ParseConsts.Task.IsArchived, false).whereEqualTo(ParseConsts.Task.User, ParseUser.getCurrentUser());
 
         query.findInBackground(new FindCallback<Task>() {
             @Override
@@ -138,10 +141,12 @@ public class HomeFragment extends Fragment {
                 viewHolder.tvTaskName = (TextView) convertView.findViewById(R.id.textViewTaskTitle);
                 viewHolder.checkBoxTask = (CheckBox) convertView.findViewById(R.id.checkBoxTask);
 
+
+
                 viewHolder.checkBoxTask.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                        if(isChecked){
+                        if (isChecked) {
                             //change everything so that it is complete
                             viewHolder.tvTaskName.setPaintFlags(viewHolder.tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                             viewHolder.tvTaskName.setTextColor(getResources().getColor(R.color.gray));
@@ -154,6 +159,10 @@ public class HomeFragment extends Fragment {
                 });
 
                 viewHolder.tvTaskName.setText(task.getTaskName());
+                if(task.getIsComplete()){
+                    viewHolder.tvTaskName.setPaintFlags(viewHolder.tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    viewHolder.tvTaskName.setTextColor(getResources().getColor(R.color.gray));
+                }
                 convertView.setTag(viewHolder);
             }
 

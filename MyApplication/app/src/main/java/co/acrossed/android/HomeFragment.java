@@ -19,9 +19,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -99,9 +101,25 @@ public class HomeFragment extends Fragment {
             @Override
             public void done(List<Task> list, ParseException e) {
                 if (e == null && list.size() > 0) {
-                    Collections.sort(list, new CategoryComparotor());
-                    tasks = list;
-                    taskAdapter.addAll(tasks);
+
+
+                    Collections.sort(list, new CategoryComparotor());//Sort list based on category
+                    String category = list.get(0).getCategory();//Name of first category
+
+                    tasks.add(new Category(category));
+
+
+                    for(Task task : list){
+                        if(task.getCategory().equals(category)){
+                            tasks.add(task);
+                        } else {
+                            category = task.getCategory();
+                            tasks.add(new Category(category));
+                            tasks.add(task);
+                        }
+                    }
+
+                    //taskAdapter.addAll(tasks);
                     taskAdapter.notifyDataSetChanged();
                 }
             }
@@ -126,7 +144,73 @@ public class HomeFragment extends Fragment {
 
 
         if (item.getItemId() == R.id.action_add) {
-            //Bodeefit.makeToastShort("Finish workout");
+
+            final Dialog dialog = new Dialog(getActivity());
+            dialog.setContentView(R.layout.add_task_dialog);
+
+            final EditText taskName = (EditText) dialog.findViewById(R.id.editTextTaskName);
+            final EditText description = (EditText)dialog.findViewById(R.id.editTextDescription);
+            final EditText category = (EditText) dialog.findViewById(R.id.editTextCategory);
+
+
+
+            Button addButton = (Button) dialog.findViewById(R.id.buttonAdd);
+            addButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    boolean addBool = true;
+                    String task = taskName.getText().toString();
+                    String descriptionString = description.getText().toString();
+                    String categoryString = category.getText().toString();
+
+                    if(task.isEmpty()){
+                        addBool = false;
+                        taskName.setError("Please enter a task name");
+                    }
+                    if(descriptionString.isEmpty()){
+                        addBool = false;
+                        description.setError("Please enter a description");
+                    }
+                    if (categoryString.isEmpty()){
+                        addBool = false;
+                        category.setError("Please enter a category");
+                    }
+
+                    if(addBool){
+                        final Task newTask = new Task();
+                        newTask.setTaskName(task);
+                        newTask.setDescription(descriptionString);
+                        newTask.setCategory(categoryString);
+                        newTask.setIsArchived(false);
+                        newTask.setIsComplete(false);
+                        newTask.setUser();
+
+                        newTask.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                tasks.add(newTask);
+                                taskAdapter.add(newTask);
+                                taskAdapter.notifyDataSetChanged();
+
+                                taskAdapter.sort(new CategoryComparotor());
+                                dialog.dismiss();
+                            }
+                        });
+
+                    }
+                }
+            });
+
+            Button cancenlButton = (Button) dialog.findViewById(R.id.buttonCancel);
+            cancenlButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.show();
+
             return true;
         }
 
@@ -173,9 +257,9 @@ public class HomeFragment extends Fragment {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
                 convertView = inflater.inflate(R.layout.task_category_row, parent, false);
 
-                viewHolder = new ViewHolder();
-                viewHolder.tvTaskName = (TextView) convertView.findViewById(R.id.textViewCategory);
-                convertView.setTag(viewHolder);
+
+                TextView categoryText = (TextView) convertView.findViewById(R.id.textViewCategory);
+                categoryText.setText(((Category) task).getCategoryTitle());
 
 
             } else {
@@ -186,7 +270,6 @@ public class HomeFragment extends Fragment {
                 viewHolder = new ViewHolder();
                 viewHolder.tvTaskName = (TextView) convertView.findViewById(R.id.textViewTaskTitle);
                 viewHolder.checkBoxTask = (CheckBox) convertView.findViewById(R.id.checkBoxTask);
-                viewHolder.tvCategory = (TextView) convertView.findViewById(R.id.textViewCategoryT);
                 viewHolder.rlLayout = (RelativeLayout) convertView.findViewById(R.id.layoutRelative);
 
                 viewHolder.rlLayout.setOnClickListener(new View.OnClickListener() {
@@ -195,27 +278,27 @@ public class HomeFragment extends Fragment {
                         //                Task currentTask = tasks.get(i);
 
 
-                final Dialog dialog = new Dialog(getActivity());
+                        final Dialog dialog = new Dialog(getActivity());
                         dialog.setContentView(R.layout.custom_dialog);
 
-                TextView description = (TextView) dialog.findViewById(R.id.textViewDescriptionDialog);
-                description.setText(task.getDescription());
+                        TextView description = (TextView) dialog.findViewById(R.id.textViewDescriptionDialog);
+                        description.setText(task.getDescription());
 
-                TextView category = (TextView) dialog.findViewById(R.id.textViewCategoryDialog);
-                category.setText(task.getCategory());
+                        TextView category = (TextView) dialog.findViewById(R.id.textViewCategoryDialog);
+                        category.setText(task.getCategory());
 
-                TextView title = (TextView) dialog.findViewById(R.id.textViewTitleDialog);
-                title.setText(task.getTaskName());
+                        TextView title = (TextView) dialog.findViewById(R.id.textViewTitleDialog);
+                        title.setText(task.getTaskName());
 
-                Button okButton = (Button) dialog.findViewById(R.id.buttonOkDialog);
-                okButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        dialog.dismiss();
-                    }
-                });
+                        Button okButton = (Button) dialog.findViewById(R.id.buttonOkDialog);
+                        okButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                dialog.dismiss();
+                            }
+                        });
 
-                dialog.show();
+                        dialog.show();
                     }
                 });
 
@@ -251,7 +334,6 @@ public class HomeFragment extends Fragment {
                 });
 
                 viewHolder.tvTaskName.setText(task.getTaskName());
-                viewHolder.tvCategory.setText(task.getCategory());
 
                 if(task.getIsComplete()){
                     viewHolder.tvTaskName.setPaintFlags(viewHolder.tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

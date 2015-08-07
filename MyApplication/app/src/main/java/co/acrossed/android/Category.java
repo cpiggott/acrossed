@@ -8,4 +8,16 @@ import com.parse.ParseClassName;
 
 @ParseClassName("Category")
 public class Category extends Task {
+
+    private String categoryTitle;
+
+    public Category(){}
+
+    public Category(String category){
+        this.categoryTitle = category;
+    }
+
+    public String getCategoryTitle(){
+        return categoryTitle;
+    }
 }

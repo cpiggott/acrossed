@@ -18,6 +18,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:text="Medium Text"
         android:id="@+id/textViewDescriptionDialog" />
 

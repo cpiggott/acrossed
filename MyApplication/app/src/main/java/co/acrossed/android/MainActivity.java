@@ -48,6 +48,8 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_action_menu);
+
 
     }
 
@@ -65,12 +67,7 @@ public class MainActivity extends ActionBarActivity
             case 1:
                 mTitle = "Home";
                 break;
-            case 2:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 3:
-                mTitle = getString(R.string.title_section3);
-                break;
+
         }
     }
 

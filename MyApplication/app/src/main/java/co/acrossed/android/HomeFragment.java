@@ -44,6 +44,7 @@ import java.util.List;
 public class HomeFragment extends Fragment {
 
     List<Task> tasks = new ArrayList<>();
+    List<String> categories = new ArrayList<>();
 
     private AbsListView mListView;
     private TaskAdapter taskAdapter;
@@ -106,6 +107,7 @@ public class HomeFragment extends Fragment {
 
                     Collections.sort(list, new CategoryComparotor());//Sort list based on category
                     String category = list.get(0).getCategory();//Name of first category
+                    categories.add(category);
 
                     tasks.add(new Category(category));
 
@@ -115,6 +117,8 @@ public class HomeFragment extends Fragment {
                             tasks.add(task);
                         } else {
                             category = task.getCategory();
+                            categories.add(category);
+
                             tasks.add(new Category(category));
                             tasks.add(task);
                         }
@@ -160,7 +164,7 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     boolean addBool = true;
-                    String task = taskName.getText().toString();
+                    final String task = taskName.getText().toString();
                     String descriptionString = description.getText().toString();
                     String categoryString = category.getText().toString();
 
@@ -186,14 +190,36 @@ public class HomeFragment extends Fragment {
                         newTask.setIsComplete(false);
                         newTask.setUser();
 
+//                        if(categoryString.charAt(categoryString.length()-1) == ' '){
+//                            categoryString = categoryString.substring(0, categoryString.length()-1);
+//                        }
+
+                        boolean addCategory = true;
+
+                        for(int i = 0; i < categories.size(); i++){
+                            String checkString = categories.get(i);
+                            if((checkString.equals(categoryString))){
+                                addCategory = false;
+                                break;
+                            }
+                        }
+
+
+                        if(addCategory){
+                            tasks.add(new Category(newTask.getCategory()));
+                            categories.add(newTask.getCategory());
+                        }
+
                         newTask.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {
+
                                 tasks.add(newTask);
-                                taskAdapter.add(newTask);
+
                                 taskAdapter.notifyDataSetChanged();
 
                                 taskAdapter.sort(new CategoryComparotor());
+
                                 dialog.dismiss();
                             }
                         });
@@ -311,7 +337,6 @@ public class HomeFragment extends Fragment {
                                         @Override
                                         public void done(ParseException e) {
                                             tasks.add(newTask);
-                                            taskAdapter.add(newTask);
                                             taskAdapter.notifyDataSetChanged();
 
                                             taskAdapter.sort(new CategoryComparotor());

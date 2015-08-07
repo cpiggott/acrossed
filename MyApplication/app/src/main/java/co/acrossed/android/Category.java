@@ -15,6 +15,7 @@ public class Category extends Task {
 
     public Category(String category){
         this.categoryTitle = category;
+        setCategory(category);
     }
 
     public String getCategoryTitle(){

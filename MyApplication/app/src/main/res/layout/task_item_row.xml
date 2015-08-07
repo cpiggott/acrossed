@@ -10,14 +10,33 @@
         android:id="@+id/checkBoxTask"
         android:layout_marginLeft="5dp"/>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/layoutRelative">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:layout_marginLeft="15dp"
-        android:text="Task Title"
-        android:id="@+id/textViewTaskTitle"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="10dp"
+            android:text="Task Title"
+            android:id="@+id/textViewTaskTitle"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_marginRight="15dp"
+            android:text="Category"
+            android:id="@+id/textViewCategoryT"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true" />
+
+
+    </RelativeLayout>
+
 
 
 

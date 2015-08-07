@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -261,6 +262,79 @@ public class HomeFragment extends Fragment {
                 TextView categoryText = (TextView) convertView.findViewById(R.id.textViewCategory);
                 categoryText.setText(((Category) task).getCategoryTitle());
 
+                ImageButton addFromCategory = (ImageButton) convertView.findViewById(R.id.imageButtonAdd);
+                addFromCategory.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final Dialog dialog = new Dialog(getActivity());
+                        dialog.setContentView(R.layout.add_task_dialog);
+
+                        final EditText taskName = (EditText) dialog.findViewById(R.id.editTextTaskName);
+                        final EditText description = (EditText)dialog.findViewById(R.id.editTextDescription);
+                        final EditText category = (EditText) dialog.findViewById(R.id.editTextCategory);
+                        category.setText(((Category) task).getCategoryTitle());
+
+
+
+                        Button addButton = (Button) dialog.findViewById(R.id.buttonAdd);
+                        addButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                boolean addBool = true;
+                                String task = taskName.getText().toString();
+                                String descriptionString = description.getText().toString();
+                                String categoryString = category.getText().toString();
+
+                                if(task.isEmpty()){
+                                    addBool = false;
+                                    taskName.setError("Please enter a task name");
+                                }
+                                if(descriptionString.isEmpty()){
+                                    addBool = false;
+                                    description.setError("Please enter a description");
+                                }
+                                if (categoryString.isEmpty()){
+                                    addBool = false;
+                                    category.setError("Please enter a category");
+                                }
+
+                                if(addBool){
+                                    final Task newTask = new Task();
+                                    newTask.setTaskName(task);
+                                    newTask.setDescription(descriptionString);
+                                    newTask.setCategory(categoryString);
+                                    newTask.setIsArchived(false);
+                                    newTask.setIsComplete(false);
+                                    newTask.setUser();
+
+                                    newTask.saveInBackground(new SaveCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            tasks.add(newTask);
+                                            taskAdapter.add(newTask);
+                                            taskAdapter.notifyDataSetChanged();
+
+                                            taskAdapter.sort(new CategoryComparotor());
+                                            dialog.dismiss();
+                                        }
+                                    });
+
+                                }
+                            }
+                        });
+
+                        Button cancenlButton = (Button) dialog.findViewById(R.id.buttonCancel);
+                        cancenlButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                        dialog.show();
+
+                    }
+                });
 
             } else {
                 LayoutInflater inflater = LayoutInflater.from(getContext());

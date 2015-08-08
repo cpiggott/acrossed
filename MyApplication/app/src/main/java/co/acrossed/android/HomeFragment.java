@@ -3,10 +3,13 @@ package co.acrossed.android;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
-import android.graphics.Paint;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,15 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ListAdapter;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,17 +33,21 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import co.dift.ui.SwipeToAction;
+
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class HomeFragment extends Fragment {
 
-    List<Task> tasks = new ArrayList<>();
-    List<String> categories = new ArrayList<>();
+    RecyclerView recyclerView;
+    TaskAdapter adapter;
+    SwipeToAction swipeToAction;
 
-    private AbsListView mListView;
-    private TaskAdapter taskAdapter;
+    List<Task> tasks = new ArrayList<>();
+
+
 
 
 
@@ -73,6 +73,7 @@ public class HomeFragment extends Fragment {
 
 
 
+
     }
 
     @Override
@@ -80,55 +81,57 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView =inflater.inflate(R.layout.fragment_main, container, false);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setHasFixedSize(true);
 
-        taskAdapter = new TaskAdapter(getActivity(), tasks);
 
-        mListView = (AbsListView) rootView.findViewById(R.id.list_tasks);
 
-        ((AdapterView< ListAdapter>)mListView).setAdapter(taskAdapter);
-
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        swipeToAction = new SwipeToAction(recyclerView, new SwipeToAction.SwipeListener<Task>() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //@TODO: Open a dialog with info
-                String t = "sd";
-
-            }
-        });
-
-        ParseQuery<Task> query = Task.getQuery();
-        query.whereEqualTo(ParseConsts.Task.IsComplete, false).whereEqualTo(ParseConsts.Task.User, ParseUser.getCurrentUser());
-
-        query.findInBackground(new FindCallback<Task>() {
-            @Override
-            public void done(List<Task> list, ParseException e) {
-                if (e == null && list.size() > 0) {
-
-
-                    Collections.sort(list, new CategoryComparotor());//Sort list based on category
-                    String category = list.get(0).getCategory();//Name of first category
-                    categories.add(category);
-
-                    tasks.add(new Category(category));
-
-
-                    for(Task task : list){
-                        if(task.getCategory().equals(category)){
-                            tasks.add(task);
-                        } else {
-                            category = task.getCategory();
-                            categories.add(category);
-
-                            tasks.add(new Category(category));
-                            tasks.add(task);
-                        }
+            public boolean swipeLeft(final Task itemData) {
+                final int pos = removeTask(itemData);
+                displaySnackbar(itemData.getTaskName() + " removed", "Undo", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        addTask(pos, itemData);
                     }
+                });
+                return true; //true will move the front view to its starting position
+            }
 
-                    //taskAdapter.addAll(tasks);
-                    taskAdapter.notifyDataSetChanged();
-                }
+            @Override
+            public boolean swipeRight(Task itemData) {
+                //do something
+                displaySnackbar("Item will eventually be recycled");
+                return true;
+            }
+
+            @Override
+            public void onClick(Task itemData) {
+                //do something
+                Toast.makeText(getActivity(), "Info will show", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLongClick(Task itemData) {
+                //do something
+                Toast.makeText(getActivity(), "Edit info", Toast.LENGTH_SHORT).show();
             }
         });
+
+
+
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                swipeToAction.swipeRight(2);
+//            }
+//        }, 3000);
+
+        getTasks();
+
+
 
         return rootView;
     }
@@ -150,93 +153,7 @@ public class HomeFragment extends Fragment {
 
         if (item.getItemId() == R.id.action_add) {
 
-            final Dialog dialog = new Dialog(getActivity());
-            dialog.setContentView(R.layout.add_task_dialog);
-
-            final EditText taskName = (EditText) dialog.findViewById(R.id.editTextTaskName);
-            final EditText description = (EditText)dialog.findViewById(R.id.editTextDescription);
-            final EditText category = (EditText) dialog.findViewById(R.id.editTextCategory);
-
-
-
-            Button addButton = (Button) dialog.findViewById(R.id.buttonAdd);
-            addButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    boolean addBool = true;
-                    final String task = taskName.getText().toString();
-                    String descriptionString = description.getText().toString();
-                    String categoryString = category.getText().toString();
-
-                    if(task.isEmpty()){
-                        addBool = false;
-                        taskName.setError("Please enter a task name");
-                    }
-                    if(descriptionString.isEmpty()){
-                        addBool = false;
-                        description.setError("Please enter a description");
-                    }
-                    if (categoryString.isEmpty()){
-                        addBool = false;
-                        category.setError("Please enter a category");
-                    }
-
-                    if(addBool){
-                        final Task newTask = new Task();
-                        newTask.setTaskName(task);
-                        newTask.setDescription(descriptionString);
-                        newTask.setCategory(categoryString);
-                        newTask.setIsArchived(false);
-                        newTask.setIsComplete(false);
-                        newTask.setUser();
-
-//                        if(categoryString.charAt(categoryString.length()-1) == ' '){
-//                            categoryString = categoryString.substring(0, categoryString.length()-1);
-//                        }
-
-                        boolean addCategory = true;
-
-                        for(int i = 0; i < categories.size(); i++){
-                            String checkString = categories.get(i);
-                            if((checkString.equals(categoryString))){
-                                addCategory = false;
-                                break;
-                            }
-                        }
-
-
-                        if(addCategory){
-                            tasks.add(new Category(newTask.getCategory()));
-                            categories.add(newTask.getCategory());
-                        }
-
-                        newTask.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-
-                                tasks.add(newTask);
-
-                                taskAdapter.notifyDataSetChanged();
-
-                                taskAdapter.sort(new CategoryComparotor());
-
-                                dialog.dismiss();
-                            }
-                        });
-
-                    }
-                }
-            });
-
-            Button cancelButton = (Button) dialog.findViewById(R.id.buttonCancel);
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
-
-            dialog.show();
+            addOptionsDialog();
 
             return true;
         }
@@ -244,7 +161,126 @@ public class HomeFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private void addOptionsDialog(){
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.add_task_dialog);
 
+        final EditText taskName = (EditText) dialog.findViewById(R.id.editTextTaskName);
+        final EditText description = (EditText)dialog.findViewById(R.id.editTextDescription);
+        final EditText category = (EditText) dialog.findViewById(R.id.editTextCategory);
+
+
+
+        Button addButton = (Button) dialog.findViewById(R.id.buttonAdd);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean addBool = true;
+                final String task = taskName.getText().toString();
+                String descriptionString = description.getText().toString();
+                String categoryString = category.getText().toString();
+
+                if(task.isEmpty()){
+                    addBool = false;
+                    taskName.setError("Please enter a task name");
+                }
+                if(descriptionString.isEmpty()){
+                    descriptionString = "";
+                }
+                if (categoryString.isEmpty()){
+                    categoryString = "";
+                }
+
+                if(addBool){
+                    final Task newTask = new Task();
+                    newTask.setTaskName(task);
+                    newTask.setDescription(descriptionString);
+                    newTask.setCategory(categoryString);
+                    newTask.setIsArchived(false);
+                    newTask.setIsComplete(false);
+                    newTask.setUser();
+
+
+                    newTask.saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+
+                            tasks.add(newTask);
+                            adapter.notifyDataSetChanged();
+
+
+                            dialog.dismiss();
+                        }
+                    });
+
+                }
+            }
+        });
+
+        Button cancelButton = (Button) dialog.findViewById(R.id.buttonCancel);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+
+    private void getTasks(){
+        ParseQuery<Task> query = Task.getQuery();
+        query.whereEqualTo(ParseConsts.Task.IsComplete, false).whereEqualTo(ParseConsts.Task.User, ParseUser.getCurrentUser());
+
+        query.findInBackground(new FindCallback<Task>() {
+            @Override
+            public void done(List<Task> list, ParseException e) {
+                if (e == null && list.size() > 0) {
+                    Collections.sort(list, new CategoryComparotor());//Sort list based on category
+                    tasks = list;
+                    adapter = new TaskAdapter(tasks);
+                    recyclerView.setAdapter(adapter);
+                    String t = "test";
+                }
+            }
+        });
+    }
+
+    private void displaySnackbar(String text, String actionName, View.OnClickListener action) {
+        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), text, Snackbar.LENGTH_LONG)
+                .setAction(actionName, action);
+
+        View v = snack.getView();
+        v.setBackgroundColor(getResources().getColor(R.color.gray));
+        ((TextView) v.findViewById(android.support.design.R.id.snackbar_text)).setTextColor(Color.WHITE);
+        ((TextView) v.findViewById(android.support.design.R.id.snackbar_action)).setTextColor(Color.BLACK);
+
+        snack.show();
+    }
+
+    private void displaySnackbar(String text){
+        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), text, Snackbar.LENGTH_LONG);
+
+        View v = snack.getView();
+        v.setBackgroundColor(getResources().getColor(R.color.gray));
+        ((TextView) v.findViewById(android.support.design.R.id.snackbar_text)).setTextColor(Color.WHITE);
+        ((TextView) v.findViewById(android.support.design.R.id.snackbar_action)).setTextColor(Color.BLACK);
+
+        snack.show();
+    }
+
+    private int removeTask(Task task) {
+        int pos = tasks.indexOf(task);
+        tasks.remove(task);
+        adapter.notifyItemRemoved(pos);
+        return pos;
+    }
+
+    private void addTask(int pos, Task book) {
+        tasks.add(pos, book);
+        adapter.notifyItemInserted(pos);
+    }
 
 
 
@@ -265,202 +301,6 @@ public class HomeFragment extends Fragment {
 
 
 
-    public class TaskAdapter extends ArrayAdapter<Task> {
-
-
-
-        public TaskAdapter(Context context, List<Task> messages) {
-            super(context, R.layout.task_item_row, messages);
-
-        }
-        //TODO: Clean this up!
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent){
-            final ViewHolder viewHolder;
-            final Task task = getItem(position);
-
-
-            if(task instanceof Category){
-                LayoutInflater inflater = LayoutInflater.from(getContext());
-                convertView = inflater.inflate(R.layout.task_category_row, parent, false);
-
-
-                TextView categoryText = (TextView) convertView.findViewById(R.id.textViewCategory);
-                categoryText.setText(((Category) task).getCategoryTitle());
-
-                ImageButton addFromCategory = (ImageButton) convertView.findViewById(R.id.imageButtonAdd);
-                addFromCategory.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        final Dialog dialog = new Dialog(getActivity());
-                        dialog.setContentView(R.layout.add_task_dialog);
-
-                        final EditText taskName = (EditText) dialog.findViewById(R.id.editTextTaskName);
-                        final EditText description = (EditText)dialog.findViewById(R.id.editTextDescription);
-                        final EditText category = (EditText) dialog.findViewById(R.id.editTextCategory);
-                        category.setText(((Category) task).getCategoryTitle());
-
-
-
-                        Button addButton = (Button) dialog.findViewById(R.id.buttonAdd);
-                        addButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                boolean addBool = true;
-                                String task = taskName.getText().toString();
-                                String descriptionString = description.getText().toString();
-                                String categoryString = category.getText().toString();
-
-                                if(task.isEmpty()){
-                                    addBool = false;
-                                    taskName.setError("Please enter a task name");
-                                }
-                                if(descriptionString.isEmpty()){
-                                    addBool = false;
-                                    description.setError("Please enter a description");
-                                }
-                                if (categoryString.isEmpty()){
-                                    addBool = false;
-                                    category.setError("Please enter a category");
-                                }
-
-                                if(addBool){
-                                    final Task newTask = new Task();
-                                    newTask.setTaskName(task);
-                                    newTask.setDescription(descriptionString);
-                                    newTask.setCategory(categoryString);
-                                    newTask.setIsArchived(false);
-                                    newTask.setIsComplete(false);
-                                    newTask.setUser();
-
-                                    newTask.saveInBackground(new SaveCallback() {
-                                        @Override
-                                        public void done(ParseException e) {
-                                            tasks.add(newTask);
-                                            taskAdapter.notifyDataSetChanged();
-
-                                            taskAdapter.sort(new CategoryComparotor());
-                                            dialog.dismiss();
-                                        }
-                                    });
-
-                                }
-                            }
-                        });
-
-                        Button cancenlButton = (Button) dialog.findViewById(R.id.buttonCancel);
-                        cancenlButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                dialog.dismiss();
-                            }
-                        });
-
-                        dialog.show();
-
-                    }
-                });
-
-            } else {
-                LayoutInflater inflater = LayoutInflater.from(getContext());
-                convertView = inflater.inflate(R.layout.task_item_row, parent, false);
-
-                //initialize viewHolder
-                viewHolder = new ViewHolder();
-                viewHolder.tvTaskName = (TextView) convertView.findViewById(R.id.textViewTaskTitle);
-                viewHolder.checkBoxTask = (CheckBox) convertView.findViewById(R.id.checkBoxTask);
-                viewHolder.rlLayout = (RelativeLayout) convertView.findViewById(R.id.layoutRelative);
-
-                viewHolder.rlLayout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        //                Task currentTask = tasks.get(i);
-
-
-                        final Dialog dialog = new Dialog(getActivity());
-                        dialog.setContentView(R.layout.custom_dialog);
-
-                        TextView description = (TextView) dialog.findViewById(R.id.textViewDescriptionDialog);
-                        description.setText(task.getDescription());
-
-                        TextView category = (TextView) dialog.findViewById(R.id.textViewCategoryDialog);
-                        category.setText(task.getCategory());
-
-                        TextView title = (TextView) dialog.findViewById(R.id.textViewTitleDialog);
-                        title.setText(task.getTaskName());
-
-                        Button okButton = (Button) dialog.findViewById(R.id.buttonOkDialog);
-                        okButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                dialog.dismiss();
-                            }
-                        });
-
-                        dialog.show();
-                    }
-                });
-
-
-
-                viewHolder.checkBoxTask.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                        if (isChecked) {
-                            //change everything so that it is complete
-                            task.setIsComplete(true);
-                            task.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    viewHolder.tvTaskName.setPaintFlags(viewHolder.tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                                    viewHolder.tvTaskName.setTextColor(getResources().getColor(R.color.gray));
-                                }
-                            });
-
-                        } else {
-                            //change everything so that it is not complete
-                            task.setIsComplete(false);
-                            task.saveInBackground(new SaveCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    viewHolder.tvTaskName.setPaintFlags((viewHolder.tvTaskName.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG));
-                                    viewHolder.tvTaskName.setTextColor(getResources().getColor(R.color.black));
-                                }
-                            });
-
-                        }
-                    }
-                });
-
-                viewHolder.tvTaskName.setText(task.getTaskName());
-
-                if(task.getIsComplete()){
-                    viewHolder.tvTaskName.setPaintFlags(viewHolder.tvTaskName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                    viewHolder.tvTaskName.setTextColor(getResources().getColor(R.color.gray));
-                }
-                convertView.setTag(viewHolder);
-            }
-
-            return convertView;
-
-        }
-
-
-        /**
-         * The view holder design pattern prevents using findViewById()
-         * repeatedly in the getView() method of the adapter.
-         *
-         * @see //developer.android.com/training/improving-layouts/smooth-scrolling.html#ViewHolder
-         */
-        private class ViewHolder {
-            CheckBox checkBoxTask;
-            TextView tvTaskName;
-            TextView tvCategory;
-            RelativeLayout rlLayout;
-        }
-
-
-    }
 
 
 }

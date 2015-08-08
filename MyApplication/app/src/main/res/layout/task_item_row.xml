@@ -1,36 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="80dp"
-   android:gravity="center_vertical">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp">
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/checkBoxTask"
-        android:layout_marginLeft="5dp"/>
-
+<!-- This reveals when swipe right-->
     <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:tag="reveal-right"
+        android:background="@color/yellow"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/layoutRelative"
-        android:layout_gravity="center"
-        android:gravity="center_vertical">
+        android:layout_height="match_parent">
 
-        <TextView
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:layout_marginLeft="15dp"
-            android:text="Task Title"
-            android:id="@+id/textViewTaskTitle"/>
-
-
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="20dp"
+            android:src="@drawable/remind_24"/>
     </RelativeLayout>
 
+    <!-- this view reveals when swipe left -->
+    <RelativeLayout
+        android:tag="reveal-left"
+        android:background="@color/black"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="20dp"
+            android:src="@drawable/delete_24"/>
+    </RelativeLayout>
 
+    <!-- this is the item front view -->
+    <RelativeLayout
+        android:tag="front"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_alignParentTop="true"/>
 
+        <TextView
+            android:id="@+id/taskTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="15dp"
+            android:singleLine="true"
+            android:textSize="20dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:text="Task"
+            android:gravity="center"/>
 
-
-</LinearLayout>
+    </RelativeLayout>
+</FrameLayout>

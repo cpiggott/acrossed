@@ -228,8 +228,8 @@ public class HomeFragment extends Fragment {
                 }
             });
 
-            Button cancenlButton = (Button) dialog.findViewById(R.id.buttonCancel);
-            cancenlButton.setOnClickListener(new View.OnClickListener() {
+            Button cancelButton = (Button) dialog.findViewById(R.id.buttonCancel);
+            cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     dialog.dismiss();

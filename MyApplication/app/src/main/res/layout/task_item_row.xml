@@ -24,7 +24,7 @@
     <!-- this view reveals when swipe left -->
     <RelativeLayout
         android:tag="reveal-left"
-        android:background="@color/black"
+        android:background="@color/green"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -34,7 +34,7 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="20dp"
-            android:src="@drawable/delete_24"/>
+            android:src="@drawable/ic_action"/>
     </RelativeLayout>
 
     <!-- this is the item front view -->

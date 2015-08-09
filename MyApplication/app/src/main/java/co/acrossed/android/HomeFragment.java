@@ -28,10 +28,15 @@ import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import co.dift.ui.SwipeToAction;
 
@@ -69,11 +74,6 @@ public class HomeFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-
-
-
-
-
     }
 
     @Override
@@ -91,7 +91,7 @@ public class HomeFragment extends Fragment {
             @Override
             public boolean swipeLeft(final Task itemData) {
                 final int pos = removeTask(itemData);
-                displaySnackbar(itemData.getTaskName() + " removed", "Undo", new View.OnClickListener() {
+                displaySnackbar(itemData.getTaskName() + " complete", "Undo", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         addTask(pos, itemData);
@@ -101,9 +101,24 @@ public class HomeFragment extends Fragment {
             }
 
             @Override
-            public boolean swipeRight(Task itemData) {
+            public boolean swipeRight(final Task itemData) {
                 //do something
-                displaySnackbar("Item will eventually be recycled");
+                final int pos = removeTask(itemData);
+                remindDialog(itemData, pos);
+
+                displaySnackbar(itemData.getTaskName() + " set to remind", "Undo", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        addTask(pos, itemData);
+                        itemData.setRemindAfter(new Date());
+                        itemData.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+
+                            }
+                        });
+                    }
+                });
                 return true;
             }
 
@@ -121,13 +136,6 @@ public class HomeFragment extends Fragment {
         });
 
 
-
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                swipeToAction.swipeRight(2);
-//            }
-//        }, 3000);
 
         getTasks();
 
@@ -238,10 +246,16 @@ public class HomeFragment extends Fragment {
             public void done(List<Task> list, ParseException e) {
                 if (e == null && list.size() > 0) {
                     Collections.sort(list, new CategoryComparotor());//Sort list based on category
-                    tasks = list;
+                    Date now = new Date();
+                    for(Task t : list){
+                        if(t.getRemindAfter() == null){
+                            tasks.add(t);
+                        } else if(now.after(t.getRemindAfter())){
+                            tasks.add(t);
+                        }
+                    }
                     adapter = new TaskAdapter(tasks);
                     recyclerView.setAdapter(adapter);
-                    String t = "test";
                 }
             }
         });
@@ -280,6 +294,116 @@ public class HomeFragment extends Fragment {
     private void addTask(int pos, Task book) {
         tasks.add(pos, book);
         adapter.notifyItemInserted(pos);
+    }
+
+    private void remindDialog(final Task task, final int position){
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.dialog_remind);
+
+        final Button laterButton = (Button) dialog.findViewById(R.id.buttonLater);
+        final Calendar cal = Calendar.getInstance(); // creates calendar
+        cal.setTime(new Date()); // sets calendar time/date
+        cal.add(Calendar.HOUR_OF_DAY, 3); // adds 5 hours
+        //laterButton.setText("Later at: " + new SimpleDateFormat("hh:mm").format(cal));
+
+        final Button tomorrowButton = (Button) dialog.findViewById(R.id.buttonTomorrow);
+        final Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.DATE, 1);
+        c.set(Calendar.HOUR_OF_DAY, 8);
+        c.set(Calendar.MINUTE, 0);
+        //tomorrowButton.setText("Tomorrow at: " + new SimpleDateFormat("EEE hh:mm").format(c));
+
+
+        final Button nextWeekButton = (Button) dialog.findViewById(R.id.buttonWeek);
+        final Calendar date1 = Calendar.getInstance();
+        date1.setTime(new Date());
+
+        while (date1.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+            date1.add(Calendar.DATE, 1);
+        }
+
+        date1.set(Calendar.HOUR_OF_DAY, 8);
+        date1.set(Calendar.MINUTE, 0);
+
+        //nextWeekButton.setText("New week at: " + new SimpleDateFormat("EEE hh:mm").format(c));
+
+
+
+        final Button cancelButton = (Button) dialog.findViewById(R.id.buttonCancelDialog);
+
+        laterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                task.setRemindAfter(cal.getTime());
+
+                laterButton.setEnabled(false);
+                tomorrowButton.setEnabled(false);
+                nextWeekButton.setEnabled(false);
+
+                task.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        dialog.dismiss();
+                    }
+                });
+            }
+        });
+
+        tomorrowButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                task.setRemindAfter(c.getTime());
+
+                laterButton.setEnabled(false);
+                tomorrowButton.setEnabled(false);
+                nextWeekButton.setEnabled(false);
+
+                task.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        dialog.dismiss();
+                    }
+                });
+            }
+        });
+
+
+        nextWeekButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                task.setRemindAfter(date1.getTime());
+
+                laterButton.setEnabled(false);
+                tomorrowButton.setEnabled(false);
+                nextWeekButton.setEnabled(false);
+
+                task.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        dialog.dismiss();
+                    }
+                });
+            }
+        });
+
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addTask(position, task);
+                dialog.dismiss();
+            }
+        });
+
+
+
+        dialog.show();
     }
 
 

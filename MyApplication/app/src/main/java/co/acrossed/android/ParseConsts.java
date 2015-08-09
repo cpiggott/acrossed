@@ -25,6 +25,7 @@ public final class ParseConsts {
         public static final String IsComplete = "isComplete";
         public static final String IsArchived = "isArchived";
         public static final String Category = "category";
+        public static final String RemindAfter = "remindAfter";
 
     }
 

@@ -1,5 +1,6 @@
 package co.acrossed.android;
 
+import com.parse.Parse;
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -74,6 +75,14 @@ public class Task extends ParseObject {
 
     public void setCategory(String category){
         put(ParseConsts.Task.Category, category);
+    }
+
+    public Date getRemindAfter(){
+        return getDate(ParseConsts.Task.RemindAfter);
+    }
+
+    public void setRemindAfter(Date date){
+        put(ParseConsts.Task.RemindAfter, date);
     }
 
 

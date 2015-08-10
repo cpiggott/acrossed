@@ -53,9 +53,6 @@ public class HomeFragment extends Fragment {
     List<Task> tasks = new ArrayList<>();
 
 
-
-
-
     public HomeFragment() {
         // Required empty public constructor
     }
@@ -91,19 +88,7 @@ public class HomeFragment extends Fragment {
             @Override
             public boolean swipeLeft(final Task itemData) {
                 final int pos = removeTask(itemData);
-                displaySnackbar(itemData.getTaskName() + " complete", "Undo", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        addTask(pos, itemData);
-                    }
-                });
-                return true; //true will move the front view to its starting position
-            }
 
-            @Override
-            public boolean swipeRight(final Task itemData) {
-                //do something
-                final int pos = removeTask(itemData);
                 remindDialog(itemData, pos);
 
                 displaySnackbar(itemData.getTaskName() + " set to remind", "Undo", new View.OnClickListener() {
@@ -119,13 +104,61 @@ public class HomeFragment extends Fragment {
                         });
                     }
                 });
+                return true; //true will move the front view to its starting position
+            }
+
+            @Override
+            public boolean swipeRight(final Task itemData) {
+                //do something
+                final int pos = removeTask(itemData);
+                itemData.setCompletedAt(new Date());
+                itemData.setIsComplete(true);
+                itemData.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        displaySnackbar(itemData.getTaskName() + " complete", "Undo", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                addTask(pos, itemData);
+                                itemData.setIsComplete(false);
+                                itemData.saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
                 return true;
             }
 
             @Override
             public void onClick(Task itemData) {
                 //do something
-                Toast.makeText(getActivity(), "Info will show", Toast.LENGTH_SHORT).show();
+                final Dialog dialog = new Dialog(getActivity());
+                dialog.setContentView(R.layout.custom_dialog);
+
+                TextView description = (TextView) dialog.findViewById(R.id.textViewDescriptionDialog);
+                description.setText(itemData.getDescription());
+
+                TextView category = (TextView) dialog.findViewById(R.id.textViewCategoryDialog);
+                category.setText(itemData.getCategory());
+
+                TextView title = (TextView) dialog.findViewById(R.id.textViewTitleDialog);
+                title.setText(itemData.getTaskName());
+
+                Button okButton = (Button) dialog.findViewById(R.id.buttonOkDialog);
+                okButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
             }
 
             @Override

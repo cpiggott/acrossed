@@ -9,6 +9,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.parse.ParseAnalytics;
 import com.parse.ParseUser;
 
 
@@ -29,6 +30,10 @@ public class MainActivity extends ActionBarActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ParseAnalytics.trackAppOpenedInBackground(getIntent());
+
+
+
         if(ParseUser.getCurrentUser() == null){
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK| Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -48,24 +53,38 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.menu_blue);
-
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.black_menu);
 
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, HomeFragment.newInstance())
-                .commit();
+        if(position == 0) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, HomeFragment.newInstance())
+                    .commit();
+        } else if (position == 2){
+            ParseUser.logOut();
+            if(ParseUser.getCurrentUser() == null){
+                Acrossed.makeToastShort("Logged out.");
+                Intent intent = new Intent(this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK| Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+
+            }
+        }
     }
 
     public void onSectionAttached(int number) {
         switch (number) {
             case 1:
                 mTitle = "Home";
+                break;
+            case 2:
+                mTitle = "Log Out";
                 break;
 
         }

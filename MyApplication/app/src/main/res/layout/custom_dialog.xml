@@ -18,7 +18,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginRight="20dp"
         android:text="Medium Text"
         android:id="@+id/textViewDescriptionDialog" />
 
@@ -28,7 +28,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:layout_marginTop="30dp"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginRight="20dp"
         android:text="Category"
         android:id="@+id/textViewCategoryDialog"
         android:layout_gravity="right" />

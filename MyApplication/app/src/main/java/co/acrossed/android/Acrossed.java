@@ -5,6 +5,8 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.parse.Parse;
+import com.parse.ParseAnalytics;
+import com.parse.ParseCrashReporting;
 import com.parse.ParseObject;
 
 /**
@@ -24,7 +26,13 @@ public class Acrossed extends Application {
         ParseObject.registerSubclass(Category.class);
 
         Parse.enableLocalDatastore(this);
+
+        ParseCrashReporting.enable(this);
+
+
         Parse.initialize(this, "Ce6lFJPBDZyQ6qzswNZr74jEYD5YeZUwMscUza4X", "7eD006vBtJSXizBJ6OE3Osmwg98YCWdgPsYUSydB");
+
+
 
     }
 

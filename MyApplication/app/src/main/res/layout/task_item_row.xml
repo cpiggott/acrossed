@@ -8,7 +8,7 @@
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:tag="reveal-right"
-        android:background="@color/yellow"
+        android:background="@color/green"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -18,13 +18,13 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="20dp"
-            android:src="@drawable/remind_24"/>
+            android:src="@drawable/ic_action"/>
     </RelativeLayout>
 
     <!-- this view reveals when swipe left -->
     <RelativeLayout
         android:tag="reveal-left"
-        android:background="@color/green"
+        android:background="@color/yellow"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -34,7 +34,7 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="20dp"
-            android:src="@drawable/ic_action"/>
+            android:src="@drawable/remind_24"/>
     </RelativeLayout>
 
     <!-- this is the item front view -->
@@ -53,7 +53,7 @@
             android:id="@+id/taskTitle"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="20dp"
             android:singleLine="true"
             android:textSize="20dp"
             android:textColor="@color/black"
